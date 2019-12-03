@@ -1,6 +1,6 @@
-# 本项目为 Hadoop课程作业
+# 本项目为 Hadoop入门练习
 
-- 作业一：编写`Java`程序，实现以程序的方式，把循环产生的1000个字符串写到`hdfs://192.168.192.3/user/yourname/test.txt`。
+- 练习一：编写`Java`程序，实现以程序的方式，把循环产生的1000个字符串写到`hdfs://192.168.192.3/user/yourname/test.txt`。
 
 > 扩展：创建、下载、查看文件信息等功能实现。
 
@@ -199,6 +199,7 @@
 ☁  target [master] ⚡  java -classpath hadoop-demo-jar-with-dependencies.jar com.hadoop.CreateFile
 ☁  target [master] ⚡  java -classpath hadoop-demo-jar-with-dependencies.jar com.hadoop.GetFile
 ☁  target [master] ⚡  java -classpath hadoop-demo-jar-with-dependencies.jar com.hadoop.GetFileStatus
+☁  hadoop-demo [master] ⚡  java -classpath target/hadoop-demo-jar-with-dependencies.jar com.hadoop.StatisticsWords data/wordin.txt data/wordout
 ```
 
 - 问题3：在`windows`下之下执行`getFile.java`(下载文件)是报错如下：
@@ -251,3 +252,72 @@ a:428)
 1）在`GitHub`上[`winutils`](https://github.com/4ttty/winutils)找对应于要操作的`Hadoop`集群上的`Hadoop`版本，并下载`hadoop.dll`，如本实验需要下载的版本是[`hadoop2.6.0`](https://github.com/4ttty/winutils/blob/master/hadoop-2.6.0/bin/hadoop.dll)；
 
 2）将已下载的`hadoop.dll`版本放入文件目录下`C:\Windows\System32`，即可。
+
+- 问题4：在没有hadoop环境的本地跑程序，出现问题如下：
+
+```bash
+java.io.IOException: HADOOP_HOME or hadoop.home.dir are not set.
+	at org.apache.hadoop.util.Shell.checkHadoopHome(Shell.java:302)
+	at org.apache.hadoop.util.Shell.<clinit>(Shell.java:327)
+	at org.apache.hadoop.util.StringUtils.<clinit>(StringUtils.java:79)
+	at org.apache.hadoop.security.Groups.parseStaticMapping(Groups.java:104)
+	at org.apache.hadoop.security.Groups.<init>(Groups.java:86)
+	at org.apache.hadoop.security.Groups.<init>(Groups.java:66)
+	at org.apache.hadoop.security.Groups.getUserToGroupsMappingService(Groups.java:280)
+	at org.apache.hadoop.security.UserGroupInformation.initialize(UserGroupInformation.java:271)
+	at org.apache.hadoop.security.UserGroupInformation.ensureInitialized(UserGroupInformation.java:248)
+	at org.apache.hadoop.security.UserGroupInformation.loginUserFromSubject(UserGroupInformation.java:763)
+	at org.apache.hadoop.security.UserGroupInformation.getLoginUser(UserGroupInformation.java:748)
+	at org.apache.hadoop.security.UserGroupInformation.getCurrentUser(UserGroupInformation.java:621)
+	at org.apache.hadoop.fs.FileSystem$Cache$Key.<init>(FileSystem.java:2753)
+	at org.apache.hadoop.fs.FileSystem$Cache$Key.<init>(FileSystem.java:2745)
+	at org.apache.hadoop.fs.FileSystem$Cache.get(FileSystem.java:2611)
+	at org.apache.hadoop.fs.FileSystem.get(FileSystem.java:370)
+	at org.apache.hadoop.fs.FileSystem.get(FileSystem.java:169)
+	at org.apache.hadoop.fs.FileSystem.get(FileSystem.java:354)
+	at org.apache.hadoop.fs.Path.getFileSystem(Path.java:296)
+	at org.apache.hadoop.io.SequenceFile$Reader.<init>(SequenceFile.java:1748)
+	at com.hadoop.SequenceFileRead.main(SequenceFileRead.java:26)
+```
+
+解决方案：https://www.cnblogs.com/huxinga/p/6875929.html
+
+在`JAVA`程序中设置：
+
+```java
+// 设置Hadoop Home路径
+System.setProperty("hadoop.home.dir", "/home/tools/hadoop-2.2.0");
+```
+
+- 问题5，缺少`hadoop-mapreduce-client-common`包，错误信息具体如下：
+
+```bash
+DEBUG - PrivilegedActionException as:zhangbocheng (auth:SIMPLE) cause:java.io.IOException: Cannot initialize Cluster. Please check your configuration for mapreduce.framework.name and the correspond server addresses.
+Exception in thread "main" java.io.IOException: Cannot initialize Cluster. Please check your configuration for mapreduce.framework.name and the correspond server addresses.
+        at org.apache.hadoop.mapreduce.Cluster.initialize(Cluster.java:120)
+        at org.apache.hadoop.mapreduce.Cluster.<init>(Cluster.java:82)
+        at org.apache.hadoop.mapreduce.Cluster.<init>(Cluster.java:75)
+        at org.apache.hadoop.mapreduce.Job$9.run(Job.java:1266)
+        at org.apache.hadoop.mapreduce.Job$9.run(Job.java:1262)
+        at java.security.AccessController.doPrivileged(Native Method)
+        at javax.security.auth.Subject.doAs(Subject.java:422)
+        at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1628)
+        at org.apache.hadoop.mapreduce.Job.connect(Job.java:1261)
+        at org.apache.hadoop.mapreduce.Job.submit(Job.java:1290)
+        at org.apache.hadoop.mapreduce.Job.waitForCompletion(Job.java:1314)
+        at com.hadoop.StatisticsWords.main(StatisticsWords.java:55)
+```
+
+解决方案：https://www.cnblogs.com/hxsyl/p/6145225.html
+
+在`pom.xml`中导入相应的包，即可。
+
+```xml
+<!--https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-mapreduce-client-common-->
+<dependency>
+  <groupId>org.apache.hadoop</groupId>
+  <artifactId>hadoop-mapreduce-client-common</artifactId>
+  <version>2.6.0</version>
+</dependency>
+```
+
